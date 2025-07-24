@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Golden Coin</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: url('https://i.ibb.co/v4V3JN6T/BG-1.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      touch-action: manipulation;
+      position: relative;
+    }
+
+    .symbol.scatter-symbol {
+      width: 98% !important;
+      height: 98% !important;
+    }
+
+    @keyframes scatterPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .pulse-animation {
+      animation: scatterPulse 0.4s ease-out;
+    }
+
+    .particle-effect {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: gold;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 2100;
+      opacity: 1;
+      animation: particleExplode 0.7s ease-out forwards;
+    }
+
+    @keyframes particleExplode {
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--x), var(--y)) scale(0);
+        opacity: 0;
+      }
+    }
+
+    .symbol-connected-border {
+      position: relative;
+      z-index: 5;
+      filter: none !important;
+    }
+
+    .symbol-connected-border::after {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      right: -6px;
+      bottom: -6px;
+      border: 3px solid gold;
+      border-radius: 20px;
+      box-shadow: 0 0 15px gold, inset 0 0 10px #ffd700;
+      opacity: 0;
+      animation: glowingBorder 0.4s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes glowingBorder {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .falling-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .falling-icon {
+      position: absolute;
+      top: -100px;
+      animation: fall linear forwards;
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      opacity: 0.6;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh);
+        opacity: 0;
+      }
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 5%;
+      z-index: 10;
+    }
+
+    .game-logo {
+      height: 60px;
+      filter: drop-shadow(0 0 5px gold);
+    }
+
+    .balance-container {
+      background: url('https://i.ibb.co/Ps0ZRmFs/Border-Saldo.png') no-repeat center center;
+      background-size: contain;
+      min-width: 280px;
+      height: 80px;
+      padding: 0;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      padding-left: 12.5%;
+    }
+
+    .balance {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #FFD700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    }
+
+    .main-content-wrapper {
+      display: flex;
+      flex: 1;
+      gap: 15px;
+      padding: 0 5%;
+      position: relative;
+      align-items: center;
+      overflow: hidden; /* Mencegah scroll yang tidak diinginkan */
+    }
+
+    .left-panel {
+      width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .multiplier-box, .buy-feature-box, .win-box {
+      background: rgb(237 0 0 / 42%);
+      border: 2px solid gold;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+
+    .multiplier-box {
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .multiplier-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #7CFC00;
+      text-shadow: 0 0 10px rgba(124, 252, 0, 0.7);
+    }
+
+    .buy-feature-box {
+     background: transparent;
+     border: none;
+     box-shadow: none;
+     backdrop-filter: none;
+     padding: 0;
+     min-height: 100px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+    }
+
+    .buy-feature-btn {
+      background: url('https://i.ibb.co/tMp18R52/Buy-feature-btn.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: transparent;
+      width: 100%;
+      height: 90px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, filter 0.2s;
+    }
+
+    .buy-feature-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .buy-feature-btn:active {
+      transform: scale(0.98);
+      filter: brightness(0.9);
+    }
+
+    .win-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      min-height: 150px;
+      overflow-y: auto;
+    }
+    
+    .win-box h4 {
+      margin-bottom: 5px;
+      color: gold;
+    }
+
+    .win-symbols-container {
+      width: 100%;
+    }
+
+    .win-symbol-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .win-symbol-img {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+    }
+
+    .win-symbol-count {
+      font-size: 0.9rem;
+      color: gold;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .win-symbol-multiplier {
+      font-size: 0.9rem;
+      color: #7CFC00;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .win-symbol-total {
+      font-size: 0.9rem;
+      color: gold;
+      min-width: 50px;
+      text-align: right;
+      font-weight: bold;
+    }
+
+    .game-area {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .reels-frame {
+        width: 100%;
+        aspect-ratio: 1.35;
+        background: url('https://i.ibb.co/4Z1MZdYK/Border.png') no-repeat center center;
+        background-size: 100% 100%;
+        overflow: hidden;
+        padding: 7.5% 4.5% 3.5% 4.5%;
+        display: flex;
+    }
+
+    .reels-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        gap: 1.5%;
+    }
+
+    .reel-column {
+        flex: 1;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .reel {
+        width: 100%;
+        height: 20%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+    }
+
+    .symbol {
+        width: 88%;
+        height: 88%;
+        object-fit: contain;
+        transition: transform 0.2s;
+        opacity: 1;
+    }
+
+    .total-win-container {
+      width: 80%;
+      max-width: 400px;
+      background: rgb(237 0 0 / 42%);
+      border: 2px solid gold;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      z-index: 20;
+    }
+
+    .total-win-label {
+      font-size: 0.9rem;
+      color: gold;
+      margin-bottom: 5px;
+    }
+
+    .total-win-amount {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: gold;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+    }
+
+    .right-panel {
+      width: 200px;
+      display: flex;
+      justify-content: center;
+      padding-top: 30px;
+    }
+
+    .character-container {
+     width: 100%;
+     height: auto;
+     min-height: 200px;
+     max-width: 300px;
+     border: none;
+     overflow: visible;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+    }
+
+    .character-container img {
+     width: auto;
+     height: auto;
+     max-height: 300px;
+     object-fit: contain;
+    }
+
+    .bottom-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 5%;
+      gap: 15px;
+      z-index: 10;
+    }
+
+    .bet-controls, .spin-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .spin-counter-display {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(to bottom, #FF416C, #FF4B2B);
+      color: white;
+      border: none;
+      padding: 2px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      height: 40px;
+      min-width: 85px;
+      font-size: 1rem;
+    }
+
+    .bet-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.2s, filter 0.2s;
+    }
+
+    .bet-btn:active {
+      transform: scale(0.9);
+      filter: brightness(0.8);
+    }
+
+    .bet-decrease {
+      background: url('https://i.ibb.co/6cHvj3Pf/gj.png');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .bet-increase {
+      background: url('https://i.ibb.co/wh168tPt/image.png');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .bet-display {
+      padding: 10px 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      font-size: 1.2rem;
+      text-align: center;
+      border: 1px solid gold;
+      min-width: 150px;
+      font-weight: bold;
+      color: gold;
+    }
+
+    .auto-settings-btn {
+      background: linear-gradient(to bottom, #FF416C, #FF4B2B);
+      color: white;
+      border: none;
+      padding: 2px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      height: 40px;
+      min-width: 85px;
+      font-size: 1rem;
+    }
+
+    .auto-settings-btn.active {
+      background: linear-gradient(to bottom, #d62f2f, #a11f1f);
+      color: white;
+      box-shadow: 0 0 15px #ff7a7a;
+    }
+
+    .spin-btn {
+      width: 90px;
+      height: 90px;
+      background: url('https://i.ibb.co/k65PGG8n/Spin-btn.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+      transition: all 0.3s;
+    }
+
+    .spin-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .spin-btn:active {
+      transform: scale(0.95);
+      filter: brightness(0.8);
+      box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+    }
+
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        animation: fadeInPopup 0.3s;
+    }
+
+    @keyframes fadeInPopup {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .auto-spin-menu {
+        background-color: #c21a1a;
+        background-image: url('https://www.transparenttextures.com/patterns/swirl.png');
+        border: 8px solid transparent;
+        border-image: linear-gradient(to bottom, #ffd700, #f0c040) 1;
+        padding: 25px 30px;
+        max-width: 580px;
+        width: 90%;
+        border-radius: 15px;
+        box-sizing: border-box;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        position: relative;
+        color: white;
+    }
+
+    .auto-spin-menu h2 {
+        text-align: center;
+        color: #ffde7a;
+        margin-top: 0;
+        margin-bottom: 30px;
+        font-size: 2rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 3px #000;
+    }
+
+    .auto-spin-menu .button-group {
+        display: flex;
+        margin-bottom: 25px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    #spin-count-selector { justify-content: space-between; }
+    #spin-count-selector .btn { flex-grow: 1; }
+    .dynamic-btn-group { width: 100%; justify-content: center; }
+
+    .auto-spin-menu .btn {
+        background: linear-gradient(to bottom, #fde488, #d1a43a);
+        border: 2px solid #a8832c;
+        border-radius: 50px;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 1rem;
+        color: #3d2507;
+        font-weight: 900;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 3px rgba(0,0,0,0.4), inset 0 1px 1px #fff5c7;
+    }
+
+    .dynamic-btn-group .btn {
+        flex-grow: 0;
+        flex-basis: 22%;
+        height: 48px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .auto-spin-menu .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 5px rgba(0,0,0,0.4), inset 0 1px 1px #fff5c7;
+    }
+
+    .auto-spin-menu .btn.active {
+        background: linear-gradient(to bottom, #fff8a8, #f0c040);
+        box-shadow: 0 0 15px #ffeb3b, inset 0 0 5px #ffffff80;
+        color: #4a2f0a;
+        transform: translateY(-1px);
+    }
+
+    .auto-spin-menu .setting-row { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 20px; }
+    .auto-spin-menu .setting-row > span { margin-bottom: 10px; font-size: 1rem; color: #ffeeaa; font-weight: 600; text-shadow: 1px 1px 2px #000; }
+    .auto-spin-menu .setting-row-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; padding: 10px 0; }
+    .auto-spin-menu .setting-row-toggle > span { color: #ffeeaa; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 2px #000; }
+
+    .auto-spin-menu .confirm-btn {
+        background: linear-gradient(to bottom, #fde488, #d1a43a);
+        border: 3px solid #a8832c;
+        border-radius: 50px;
+        width: 70%;
+        height: 65px;
+        color: #4a2f0a;
+        font-size: 1.5rem;
+        cursor: pointer;
+        margin: 20px auto 0 auto;
+        display: block;
+        font-weight: 900;
+        text-shadow: 1px 1px 1px #fff5c7;
+        box-shadow: 0 3px 4px rgba(0,0,0,0.4), inset 0 1px 1px #fff5c7;
+    }
+
+    .switch { position: relative; display: inline-block; width: 70px; height: 34px; transform: scale(0.9); }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #6e6e6e;
+        border-radius: 34px;
+        transition: .4s;
+    }
+    .slider:before {
+        position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px;
+        background-color: white;
+        border-radius: 50%;
+        transition: .4s;
+    }
+    input:checked + .slider { background-color: #28a745; }
+    input:checked + .slider:before { transform: translateX(36px); }
+
+    .symbol-exiting {
+      animation: symbolExit 0.4s ease-in forwards;
+    }
+
+    @keyframes symbolExit {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+    }
+
+    .symbol-falling {
+      transform: translateY(-100px);
+      opacity: 0;
+      animation: symbolFall 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes symbolFall {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .winning-symbol {
+      animation: winPulse 0.5s ease-in-out 3;
+      position: relative;
+    }
+
+    @keyframes winPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    @keyframes winGlow {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { opacity: 0.8; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .free-spin-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeInPopup 0.5s;
+    }
+
+    .free-spin-text {
+      font-size: 3rem;
+      font-weight: bold;
+      color: gold;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+      margin-bottom: 20px;
+      animation: jackpotPulse 1s infinite;
+    }
+
+    @keyframes jackpotPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .free-spin-count {
+      font-size: 4rem;
+      font-weight: bold;
+      color: #FFD700;
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.9);
+      margin-bottom: 30px;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #f00;
+      opacity: 0;
+      animation: confettiFall 5s linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .multiplier-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3rem;
+      font-weight: bold;
+      color: gold;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .multiplier-display.show {
+      animation: multiplierPop 1s forwards;
+    }
+
+    @keyframes multiplierPop {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
+    .multiplier-fly {
+      position: absolute;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #7CFC00;
+      text-shadow: 0 0 10px rgba(124, 252, 0, 0.7);
+      z-index: 30;
+      animation: multiplierFly 1s forwards;
+    }
+
+    @keyframes multiplierFly {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--target-x), var(--target-y)) scale(0.5);
+        opacity: 0;
+      }
+    }
+
+    .symbol-cascade {
+      animation: cascadeFall 0.5s ease-out forwards;
+    }
+
+    @keyframes cascadeFall {
+      to {
+        transform: translateY(var(--fall-distance));
+      }
+    }
+
+    .symbol-removing {
+      animation: fadeOut 0.3s ease-in forwards;
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.8); }
+    }
+
+    .symbol-highlight {
+      animation: pulse 0.5s ease-in-out 2;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .cascade-counter {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      font-weight: bold;
+      color: rgba(255, 217, 0, 0);
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0);
+      z-index: 100;
+      animation: popIn 0.5s;
+    }
+
+    @keyframes popIn {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      80% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    /* === Perubahan untuk Tampilan Mobile Sesuai Denah === */
+    @media (max-width: 768px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto; /* Izinkan scroll jika konten melebihi layar */
+      }
+
+      .main-container {
+        padding: 5px;
+        height: auto;
+      }
+
+      .top-bar {
+        padding: 10px 5px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .balance-container {
+        min-width: 250px;
+        height: 70px;
+        padding-left: 10%;
+        background-size: 100% 100%;
+      }
+      
+      .balance {
+        font-size: 1.8rem;
+      }
+
+      .main-content-wrapper {
+        flex-direction: column;
+        padding: 0 5px;
+        gap: 10px;
+        flex: none; /* Hapus flex grow agar tidak aneh */
+      }
+      
+      .game-area {
+        order: 1; /* Denah: Game utama */
+        width: 100%;
+      }
+
+      .game-container {
+        max-width: 100%;
+      }
+
+      .left-panel {
+        order: 2; /* Denah: Panel di bawah game */
+        width: 100%;
+        flex-direction: column; 
+        gap: 10px;
+      }
+
+      .win-box {
+        order: 1; /* Denah: Perhitungan FSI */
+        max-height: 150px; /* Batasi tinggi agar tidak terlalu panjang */
+        width: 100%;
+        min-width: unset;
+        max-width: unset;
+      }
+      
+      .multiplier-box {
+         order: 2; /* Di bawah FSI */
+         width: 100%;
+         min-width: unset;
+         max-width: unset;
+      }
+      
+      .buy-feature-box {
+        order: 3; /* Paling bawah di panel ini */
+        width: 100%;
+        min-width: unset;
+        max-width: unset;
+      }
+
+      .right-panel {
+        display: none; /* Sembunyikan karakter sesuai denah */
+      }
+
+      .bottom-panel {
+        order: 3; /* Denah: Panel paling bawah */
+        flex-direction: column;
+        gap: 15px;
+        padding: 10px 5px;
+        width: 100%;
+      }
+      
+      .total-win-container {
+        order: 1; /* Denah: Total Kemenangan */
+        position: relative;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        width: 100%;
+        max-width: unset;
+        margin-top: 0;
+      }
+
+      .bet-controls {
+        order: 2; /* Denah: Bet di kolom sini */
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .spin-controls {
+        order: 3; /* Denah: Tombol Spin */
+        width: 100%;
+        justify-content: center;
+        gap: 10px;
+      }
+      
+      .spin-btn {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .bet-btn {
+        width: 45px;
+        height: 45px;
+      }
+
+      .auto-spin-menu {
+          padding: 20px;
+          width: 95%;
+      }
+      .auto-spin-menu h2 { font-size: 1.5rem; margin-bottom: 20px; }
+      .auto-spin-menu .btn { font-size: 0.8rem; padding: 8px 10px; }
+      .dynamic-btn-group .btn { flex-basis: 45%; }
+      .auto-spin-menu .confirm-btn { height: 50px; font-size: 1.2rem; }
+      .auto-spin-menu .setting-row-toggle > span { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="falling-container" id="fallingContainer"></div>
+  <div class="main-container">
+    <div class="top-bar">
+      <img src="" alt="" class="game-logo">
+      <div class="balance-container">
+        <div class="balance" id="balance">50000</div>
+      </div>
+    </div>
+    <div class="main-content-wrapper">
+      <div class="left-panel">
+        <div class="win-box" id="win-breakdown-panel">
+          <h4>Perhitungan FSI</h4>
+          <div class="win-symbols-container" id="win-symbols-container"></div>
+        </div>
+         <div class="multiplier-box">
+          <h3>Pengali</h3>
+          <div class="multiplier-value" id="multiplier-meter-value">X0</div>
+        </div>
+        <div class="buy-feature-box">
+          <button id="buy-feature-btn" class="buy-feature-btn"></button>
+        </div>
+      </div>
+      <div class="game-area">
+        <div class="game-container">
+          <div class="reels-frame">
+            <div class="reels-container" id="reels"></div>
+          </div>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="character-container">
+          <img src="https://i.ibb.co/9mfKw3Zw/animasi-slot.gif" alt="Animated Character">
+        </div>
+      </div>
+    </div>
+    <div class="bottom-panel">
+       <div class="total-win-container" id="total-win-container">
+          <div class="total-win-label">Total Kemenangan</div>
+          <div class="total-win-amount" id="total-win-amount">0</div>
+        </div>
+      <div class="bet-controls">
+        <div class="bet-display" id="bet-display">100 Credits</div>
+        <div class="spin-counter-display" id="spin-counter-display"></div>
+      </div>
+      <div class="spin-controls">
+        <button id="bet-decrease" class="bet-btn bet-decrease"></button>
+        <button id="spin-btn" class="spin-btn"></button>
+        <button id="bet-increase" class="bet-btn bet-increase"></button>
+        <button id="auto-spin-settings-btn" class="auto-settings-btn">AUTO</button>
+      </div>
+    </div>
+    <div class="free-spin-animation" id="free-spin-animation" style="display: none;">
+      <div class="free-spin-text">FREE SPIN!</div>
+      <div class="free-spin-count" id="free-spin-count">0</div>
+    </div>
+    <div class="multiplier-display" id="multiplier-display"></div>
+    <div class="popup-overlay" id="auto-spin-overlay">
+      <div class="auto-spin-menu">
+        <h2>PENGATURAN OTOMATIS</h2>
+        <div id="spin-count-selector" class="button-group">
+          <button class="btn" data-spins="10">10</button>
+          <button class="btn" data-spins="30">30</button>
+          <button class="btn" data-spins="50">50</button>
+          <button class="btn active" data-spins="100">100</button>
+          <button class="btn" data-spins="1000">1000</button>
+        </div>
+        <div class="setting-row-toggle">
+          <span>Berhenti ketika fitur dimenangkan</span>
+          <label class="switch">
+            <input type="checkbox" id="stop-on-feature">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>Berhenti jika saldo lebih rendah dari</span>
+          <div id="stop-lower-buttons" class="button-group dynamic-btn-group"></div>
+        </div>
+        <div class="setting-row">
+          <span>Berhenti jika saldo lebih tinggi dari</span>
+          <div id="stop-higher-buttons" class="button-group dynamic-btn-group"></div>
+        </div>
+        <button id="confirm-auto-spin-btn" class="confirm-btn">KONFIRMASI</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Javascript Anda tetap sama, tidak perlu diubah
+    const sleep = ms => new Promise(res => setTimeout(res, ms));
+    const CONFIG = {
+      symbols: [
+        { name: "Symbol-1", img: "https://i.ibb.co/8DJ2mb6w/Icon-1.png", value: 1 },
+        { name: "Symbol-2", img: "https://i.ibb.co/d0t85D2R/Icon-2.png", value: 2 },
+        { name: "Symbol-3", img: "https://i.ibb.co/tpJ8KQJ2/Icon-4.png", value: 3 },
+        { name: "Symbol-4", img: "https://i.ibb.co/CpWWbwhd/Icon-6.png", value: 5 },
+        { name: "Symbol-5", img: "https://i.ibb.co/Xx4XPpCG/Icon-7.png", value: 10 },
+        { name: "Symbol-6", img: "https://i.ibb.co/TMTdTbTs/Icon-8.png", value: 15 },
+        { name: "Symbol-7", img: "https://i.ibb.co/9kPmmSCj/Icon-9.png", value: 20 },
+        { name: "Symbol-8", img: "https://i.ibb.co/TxdgxZrm/Icon-3.png", value: 25 },
+        { name: "Scatter", img: "https://i.ibb.co/rRRvzbFp/monyet-scater.png", value: 0, isScatter: true },
+        {
+          name: "Multiplier",
+          value: 0,
+          isMultiplier: true,
+          multiplierImages: {
+            2: "https://i.ibb.co/ns5C8Smk/2x.png", 3: "https://i.ibb.co/jvCZj42n/3x.png",
+            5: "https://i.ibb.co/v6fm4Gyv/5x.png", 10: "https://i.ibb.co/FLrp9CH3/10x.png",
+            25: "https://i.ibb.co/3YNhhrLL/25x.png", 50: "https://i.ibb.co/HftNYzD3/50x.png",
+            75: "https://i.ibb.co/wZtQ6LRS/75x.png", 100: "https://i.ibb.co/Xr0Qz278/100x.png",
+            250: "https://i.ibb.co/20F517rh/250x.png", 500: "https://i.ibb.co/NdXTKFgK/500x.png",
+            1000: "https://i.ibb.co/pBq140LN/1000x.png"
+          }
+        }
+      ],
+      reelCount: 6,
+      rowCount: 5,
+      initialBalance: 50000,
+      defaultBet: 100,
+      minBet: 100,
+      maxBet: 50000000,
+      betSteps: [100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000, 20000000, 50000000],
+      scatterPayout: [0, 0, 0, 0, 12, 15, 18],
+      scatterProbability: [
+        { count: 0, probability: 85 }, { count: 1, probability: 10 },
+        { count: 2, probability: 3 }, { count: 3, probability: 1.5 },
+        { count: 4, probability: 0.3 }, { count: 5, probability: 0.07 },
+        { count: 6, probability: 0.01 }
+      ],
+      symbolWeights: [40, 35, 25, 15, 8, 4, 2, 1, 4, 2],
+      multiplierValues: [
+        {value: 2, probability: 100}, {value: 3, probability: 60},
+        {value: 5, probability: 40}, {value: 10, probability: 15},
+        {value: 25, probability: 5}, {value: 50, probability: 1},
+        {value: 75, probability: 0.5}, {value: 100, probability: 0.2},
+        {value: 250, probability: 0.05}, {value: 500, probability: 0.02},
+        {value: 1000, probability: 0.01}
+      ],
+      payoutTable: {
+        "Symbol-1": {9: 0.10, 10: 0.20, 12: 0.40},
+        "Symbol-2": {9: 0.10, 10: 0.20, 12: 0.40},
+        "Symbol-3": {9: 0.15, 10: 0.30, 12: 0.60},
+        "Symbol-4": {9: 0.20, 10: 0.40, 12: 0.80},
+        "Symbol-5": {9: 0.25, 10: 0.50, 12: 1.0},
+        "Symbol-6": {9: 0.40, 10: 0.80, 12: 2.0},
+        "Symbol-7": {9: 0.50, 10: 1.0,  12: 4.0},
+        "Symbol-8": {9: 1.0,  10: 2.0,  12: 8.0}
+      }
+    };
+
+    let balance = CONFIG.initialBalance;
+    let currentBet = CONFIG.defaultBet;
+    let isSpinning = false;
+    let autoSpinCount = 0;
+    let reels = [];
+    let freeSpinMode = false;
+    let remainingFreeSpins = 0;
+    let totalMultiplier = 0;
+    let scatterPositions = [];
+    let autoSpinSettings = {
+        spinsToRun: 100,
+        stopOnFeatureWin: false,
+        stopIfBalanceLower: null,
+        stopIfBalanceHigher: null,
+    };
+    let temporaryAutoSettings = {};
+
+    function createParticleExplosion(element) {
+      const rect = element.getBoundingClientRect();
+      const originX = rect.left + rect.width / 2;
+      const originY = rect.top + rect.height / 2;
+      const particleCount = 12;
+
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle-effect';
+        document.body.appendChild(particle);
+
+        const angle = Math.random() * 2 * Math.PI;
+        const radius = Math.random() * 60 + 25;
+        const targetX = Math.cos(angle) * radius;
+        const targetY = Math.sin(angle) * radius;
+
+        particle.style.left = `${originX}px`;
+        particle.style.top = `${originY}px`;
+        particle.style.setProperty('--x', `${targetX}px`);
+        particle.style.setProperty('--y', `${targetY}px`);
+
+        setTimeout(() => {
+          particle.remove();
+        }, 700);
+      }
+    }
+
+    function initGame() {
+      createReels();
+      updateUI();
+      
+      document.getElementById('spin-btn').addEventListener('click', handleSpinClick);
+      document.getElementById('buy-feature-btn').addEventListener('click', buyFeature);
+      document.getElementById('bet-increase').addEventListener('click', increaseBet);
+      document.getElementById('bet-decrease').addEventListener('click', decreaseBet);
+      
+      document.getElementById('auto-spin-settings-btn').addEventListener('click', handleAutoSpinButtonClick);
+      document.getElementById('confirm-auto-spin-btn').addEventListener('click', confirmAutoSpinSettings);
+      document.getElementById('auto-spin-overlay').addEventListener('click', (e) => {
+          if (e.target.id === 'auto-spin-overlay') {
+              document.getElementById('auto-spin-overlay').style.display = 'none';
+          }
+      });
+      
+      setupAutoSpinPopupListeners();
+    }
+
+    async function startSpin() {
+      try {
+        if (isSpinning) return;
+        
+        isSpinning = true;
+        totalMultiplier = 0;
+        scatterPositions = [];
+        document.getElementById('multiplier-meter-value').textContent = `X0`;
+        document.getElementById('win-symbols-container').innerHTML = '';
+
+        if (!freeSpinMode) {
+          if (balance < currentBet) {
+            alert('Insufficient balance!');
+            stopAutoSpin("Saldo tidak cukup.");
+            isSpinning = false;
+            return;
+          }
+          balance -= currentBet;
+        }
+        
+        updateUI();
+        
+        const allSymbolElements = document.querySelectorAll('.symbol');
+        allSymbolElements.forEach(symbol => {
+            symbol.classList.remove('winning-symbol', 'symbol-falling', 'symbol-exiting', 'symbol-connected-border');
+            symbol.style.animationDelay = '0s';
+        });
+
+        let maxExitDelay = 0;
+        for (let col = 0; col < CONFIG.reelCount; col++) {
+          for (let row = 0; row < CONFIG.rowCount; row++) {
+            const reelColumn = document.getElementById(`reel-${col}`);
+            const symbolEl = reelColumn.querySelectorAll('.symbol')[row];
+            const delay = (col * 100) + (row * 50);
+            if (delay > maxExitDelay) maxExitDelay = delay;
+            
+            symbolEl.style.animationDelay = `${delay}ms`;
+            symbolEl.classList.add('symbol-exiting');
+          }
+        }
+        
+        const exitAnimationDuration = 400;
+        await sleep(maxExitDelay + exitAnimationDuration);
+        await sleep(500);
+        
+        const scatterCount = determineScatterCount();
+        const scatterSymbol = CONFIG.symbols.find(s => s.isScatter);
+        let allPositions = [];
+        
+        for (let c = 0; c < CONFIG.reelCount; c++) {
+            for (let r = 0; r < CONFIG.rowCount; r++) {
+                allPositions.push({ col: c, row: r });
+            }
+        }
+        
+        for (let i = allPositions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allPositions[i], allPositions[j]] = [allPositions[j], allPositions[i]];
+        }
+        
+        for (let i = 0; i < scatterCount; i++) {
+            const pos = allPositions[i];
+            reels[pos.col][pos.row] = { ...scatterSymbol };
+            scatterPositions.push(pos);
+        }
+        
+        for (let i = scatterCount; i < allPositions.length; i++) {
+            const pos = allPositions[i];
+            reels[pos.col][pos.row] = getRandomNonScatterSymbol();
+        }
+
+        let maxEntryDelay = 0;
+        for (let col = 0; col < CONFIG.reelCount; col++) {
+            for (let row = 0; row < CONFIG.rowCount; row++) {
+                const reelColumn = document.getElementById(`reel-${col}`);
+                const symbolEl = reelColumn.querySelectorAll('.symbol')[row];
+                
+                symbolEl.classList.remove('symbol-exiting');
+                let newSymbolData = reels[col][row];
+                
+                if(newSymbolData.isMultiplier) {
+                    const multiplierData = getRandomMultiplier();
+                    newSymbolData.value = multiplierData.value;
+                    newSymbolData.img = multiplierData.img;
+                }
+
+                symbolEl.src = newSymbolData.img;
+                symbolEl.alt = newSymbolData.name;
+                symbolEl.dataset.symbol = newSymbolData.name;
+
+                symbolEl.classList.remove('scatter-symbol');
+                if (newSymbolData.isScatter) {
+                    symbolEl.classList.add('scatter-symbol');
+                }
+
+                const delay = (col * 150) + (row * 80);
+                if (delay > maxEntryDelay) {
+                  maxEntryDelay = delay;
+                }
+
+                symbolEl.style.animationDelay = `${delay}ms`;
+                symbolEl.classList.add('symbol-falling');
+            }
+        }
+
+        const entryAnimationDuration = 600; 
+        setTimeout(() => {
+          checkWins();
+        }, maxEntryDelay + entryAnimationDuration);
+      } catch (error) {
+        console.error("Error during spin:", error);
+        isSpinning = false;
+      }
+    }
+    
+    async function removeAndCascadeSymbols(winningPositions) {
+        const removalPromises = [];
+        const columnsToCascade = new Map();
+
+        winningPositions.forEach(pos => {
+            const reelColumn = document.getElementById(`reel-${pos.col}`);
+            if (reelColumn) {
+                const symbolEl = reelColumn.querySelectorAll('.symbol')[pos.row];
+                if (symbolEl) {
+                    symbolEl.classList.remove('winning-symbol', 'symbol-connected-border');
+                    symbolEl.classList.add('symbol-removing');
+                    removalPromises.push(sleep(300));
+
+                    if (!columnsToCascade.has(pos.col)) {
+                        columnsToCascade.set(pos.col, []);
+                    }
+                    columnsToCascade.get(pos.col).push(pos.row);
+                }
+            }
+        });
+
+        await Promise.all(removalPromises);
+
+        winningPositions.forEach(pos => {
+            if (reels[pos.col]) {
+                reels[pos.col][pos.row] = null;
+            }
+        });
+
+        const cascadePromises = [];
+        for (const [col, removedRows] of columnsToCascade.entries()) {
+            cascadePromises.push(handleSingleColumnCascade(col));
+        }
+        await Promise.all(cascadePromises);
+    }
+
+    function highlightWinningSymbols(positions) {
+      positions.forEach(pos => {
+        const reel = document.getElementById(`reel-${pos.col}`);
+        if (reel) {
+          const symbols = reel.querySelectorAll('.symbol');
+          const symbol = symbols[pos.row];
+          if (symbol) {
+              symbol.classList.remove('winning-symbol', 'symbol-connected-border');
+              void symbol.offsetWidth;
+              symbol.classList.add('winning-symbol');
+              symbol.classList.add('symbol-connected-border');
+              createParticleExplosion(symbol);
+          }
+        }
+      });
+    }
+
+    function showTotalWin(amount) {
+      const winAmountElement = document.getElementById('total-win-amount');
+      winAmountElement.textContent = formatCurrency(amount);
+      
+      winAmountElement.style.transform = 'scale(1.2)';
+      setTimeout(() => {
+        winAmountElement.style.transform = 'scale(1)';
+      }, 300);
+    }
+    
+    function showFreeSpinAnimation(count) {
+      const freeSpinAnimation = document.getElementById('free-spin-animation');
+      const freeSpinCountElement = document.getElementById('free-spin-count');
+      
+      freeSpinCountElement.textContent = count;
+      freeSpinAnimation.style.display = 'flex';
+      
+      for (let i = 0; i < 50; i++) createConfetti();
+      
+      setTimeout(() => {
+        freeSpinAnimation.style.animation = 'fadeOut 0.5s';
+        setTimeout(() => {
+          freeSpinAnimation.style.display = 'none';
+          freeSpinAnimation.style.animation = 'fadeInPopup 0.5s';
+          if (autoSpinCount <= 0) {
+             startFreeSpins(count);
+          }
+        }, 500);
+      }, 2000);
+    }
+
+    function createConfetti() {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      
+      const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      
+      confetti.style.left = `${Math.random() * 100}%`;
+      
+      const size = Math.random() * 10 + 5;
+      confetti.style.width = `${size}px`;
+      confetti.style.height = `${size}px`;
+      
+      const duration = Math.random() * 3 + 2;
+      confetti.style.animationDuration = `${duration}s`;
+      
+      document.body.appendChild(confetti);
+      
+      setTimeout(() => confetti.remove(), duration * 1000);
+    }
+
+    function startFreeSpins(count) {
+      freeSpinMode = true;
+      remainingFreeSpins = count;
+      totalMultiplier = 0;
+      document.getElementById('buy-feature-btn').disabled = true;
+      
+      updateSpinCounter('FREE', remainingFreeSpins);
+      
+      startSpin();
+    }
+    
+    function updateSpinCounter(mode, count) {
+        const spinCounter = document.getElementById('spin-counter-display');
+        if (mode && count > 0) {
+            spinCounter.textContent = `${mode}: ${count}`;
+            spinCounter.style.display = 'flex';
+        } else {
+            spinCounter.style.display = 'none';
+        }
+    }
+
+    function completeSpin() {
+      isSpinning = false;
+      
+      if (freeSpinMode) {
+        remainingFreeSpins--;
+        if (remainingFreeSpins > 0) {
+          updateSpinCounter('FREE', remainingFreeSpins);
+          setTimeout(startSpin, 1500);
+        } else {
+          endFreeSpinMode();
+        }
+        return; 
+      }
+      
+      if (autoSpinCount > 0) {
+          if (autoSpinSettings.stopIfBalanceLower !== null && balance < autoSpinSettings.stopIfBalanceLower) {
+              stopAutoSpin("Saldo di bawah batas.");
+              return;
+          }
+          if (autoSpinSettings.stopIfBalanceHigher !== null && balance > autoSpinSettings.stopIfBalanceHigher) {
+              stopAutoSpin("Target saldo tercapai.");
+              return;
+          }
+
+          autoSpinCount--;
+          updateSpinCounter('AUTO', autoSpinCount);
+
+          if (autoSpinCount > 0) {
+              setTimeout(startSpin, 1000);
+          } else {
+              stopAutoSpin("Jumlah putaran habis.");
+          }
+      }
+    }
+
+    function endFreeSpinMode() {
+      freeSpinMode = false;
+      totalMultiplier = 0;
+      document.getElementById('buy-feature-btn').disabled = false;
+      
+      if (autoSpinCount > 0) {
+          updateSpinCounter('AUTO', autoSpinCount);
+          setTimeout(startSpin, 1500);
+      } else {
+          updateSpinCounter(null, 0); 
+      }
+    }
+
+    function buyFeature() {
+      const featureCost = currentBet * 100;
+      
+      if (balance >= featureCost) {
+        if (confirm(`Buy Bonus Feature for ${formatCurrency(featureCost)} credits?`)) {
+          balance -= featureCost;
+          updateUI();
+          showFreeSpinAnimation(12);
+        }
+      } else {
+        alert("Insufficient balance to buy this feature!");
+      }
+    }
+
+    function increaseBet() {
+      const currentIndex = CONFIG.betSteps.indexOf(currentBet);
+      if (currentIndex < CONFIG.betSteps.length - 1) {
+        currentBet = CONFIG.betSteps[currentIndex + 1];
+      }
+      updateUI();
+    }
+
+    function decreaseBet() {
+      const currentIndex = CONFIG.betSteps.indexOf(currentBet);
+      if (currentIndex > 0) {
+        currentBet = CONFIG.betSteps[currentIndex - 1];
+      }
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById('balance').textContent = formatCurrency(balance);
+      document.getElementById('bet-display').textContent = `${formatCurrency(currentBet)} Credits`;
+    }
+
+    function formatCurrency(num) {
+        let numValue = typeof num === 'string' ? parseFloat(num.replace(/[^0-9.-]+/g,"")) : num;
+        if (isNaN(numValue)) return "0";
+
+        if (numValue < 1000) return Math.ceil(numValue).toString();
+        
+        const units = ["", "K", "M", "B", "T"];
+        const unitIndex = Math.floor(Math.log10(numValue) / 3);
+        if(unitIndex >= units.length) return Math.ceil(numValue).toExponential(2);
+        const unitValue = Math.pow(1000, unitIndex);
+        const shortValue = numValue / unitValue;
+        
+        return shortValue.toFixed(1).replace(/\.0$/, '') + units[unitIndex];
+    }
+    
+    document.addEventListener('DOMContentLoaded', initGame);
+    
+    window.addEventListener('DOMContentLoaded', initGame);
+
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => window.scrollTo(0, 0), 500);
+    });
+
+    function handleAutoSpinButtonClick() {
+        if (autoSpinCount > 0) {
+            stopAutoSpin("Dihentikan manual.");
+        } else {
+            openAutoSpinPopup();
+        }
+    }
+
+    function openAutoSpinPopup() {
+        if (isSpinning) return;
+        temporaryAutoSettings = { ...autoSpinSettings };
+        updateAutoSpinPopupUI();
+        document.getElementById('auto-spin-overlay').style.display = 'flex';
+    }
+    
+    function updateAutoSpinPopupUI() {
+        document.querySelectorAll('#spin-count-selector .btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (parseInt(btn.dataset.spins) === temporaryAutoSettings.spinsToRun) {
+                btn.classList.add('active');
+            }
+        });
+
+        document.getElementById('stop-on-feature').checked = temporaryAutoSettings.stopOnFeatureWin;
+
+        updateDynamicBalanceButtons();
+    }
+
+    function roundToSensibleNumber(num) {
+        if (num <= 0) return 0;
+        if (num < 1000) return Math.round(num / 10) * 10;
+        return Math.round(num / 100) * 100;
+    }
+
+    function updateDynamicBalanceButtons() {
+        const stopLowerContainer = document.getElementById('stop-lower-buttons');
+        const stopHigherContainer = document.getElementById('stop-higher-buttons');
+        stopLowerContainer.innerHTML = '';
+        stopHigherContainer.innerHTML = '';
+
+        const lowerPercentages = [0.8, 0.6, 0.4, 0.2];
+        const higherMultipliers = [1.5, 2, 2.5, 3.5];
+
+        const createButton = (container, value, settingKey) => {
+            const button = document.createElement('button');
+            button.className = 'btn';
+            button.textContent = formatCurrency(value);
+            button.dataset.value = value;
+
+            if (temporaryAutoSettings[settingKey] === value) {
+                button.classList.add('active');
+            }
+
+            button.addEventListener('click', () => {
+                const isActive = button.classList.contains('active');
+                container.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+                if (isActive) {
+                    temporaryAutoSettings[settingKey] = null;
+                } else {
+                    button.classList.add('active');
+                    temporaryAutoSettings[settingKey] = value;
+                }
+            });
+            container.appendChild(button);
+        };
+
+        lowerPercentages.forEach(p => {
+            const val = roundToSensibleNumber(balance * p);
+            if (val > 0) createButton(stopLowerContainer, val, 'stopIfBalanceLower');
+        });
+
+        higherMultipliers.forEach(m => {
+            const val = roundToSensibleNumber(balance * m);
+            createButton(stopHigherContainer, val, 'stopIfBalanceHigher');
+        });
+    }
+    
+    function setupAutoSpinPopupListeners() {
+        document.querySelectorAll('#spin-count-selector .btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('#spin-count-selector .btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                temporaryAutoSettings.spinsToRun = parseInt(button.dataset.spins);
+            });
+        });
+
+        document.getElementById('stop-on-feature').addEventListener('change', (e) => {
+            temporaryAutoSettings.stopOnFeatureWin = e.target.checked;
+        });
+    }
+
+    function confirmAutoSpinSettings() {
+        autoSpinSettings = { ...temporaryAutoSettings };
+        autoSpinCount = autoSpinSettings.spinsToRun;
+        
+        document.getElementById('auto-spin-overlay').style.display = 'none';
+        
+        if (!isSpinning) {
+            startAutoSpinUI();
+            startSpin();
+        }
+    }
+    
+    function startAutoSpinUI() {
+        const autoBtn = document.getElementById('auto-spin-settings-btn');
+        autoBtn.textContent = 'STOP';
+        autoBtn.classList.add('active');
+        document.getElementById('spin-btn').disabled = true;
+
+        updateSpinCounter('AUTO', autoSpinCount);
+    }
+
+    function stopAutoSpin(reason) {
+      if (reason) console.log(`Auto-spin berhenti: ${reason}`);
+      autoSpinCount = 0;
+      const autoBtn = document.getElementById('auto-spin-settings-btn');
+      autoBtn.textContent = 'AUTO';
+      autoBtn.classList.remove('active');
+      document.getElementById('spin-btn').disabled = false;
+      
+      if (!freeSpinMode) { 
+        updateSpinCounter(null, 0); 
+      }
+    }
+
+    function createReels() {
+      const reelsContainer = document.getElementById('reels');
+      reelsContainer.innerHTML = '';
+      reels = Array(CONFIG.reelCount).fill().map(() => Array(CONFIG.rowCount).fill(null));
+      
+      for (let i = 0; i < CONFIG.reelCount; i++) {
+        const reelColumn = document.createElement('div');
+        reelColumn.className = 'reel-column';
+        reelColumn.id = `reel-${i}`;
+        
+        for (let j = 0; j < CONFIG.rowCount; j++) {
+          const reel = document.createElement('div');
+          reel.className = 'reel';
+          reel.style.top = `${j * 20}%`;
+          
+          const symbolData = getRandomSymbol();
+          const img = document.createElement('img');
+          if (symbolData.isMultiplier) {
+              const multiplierData = getRandomMultiplier();
+              symbolData.value = multiplierData.value;
+              img.src = multiplierData.img;
+          } else {
+              img.src = symbolData.img;
+          }
+          img.alt = symbolData.name;
+          img.className = 'symbol';
+          img.dataset.symbol = symbolData.name;
+          
+          if (symbolData.isScatter) {
+            img.classList.add('scatter-symbol');
+          }
+          
+          reel.appendChild(img);
+          reelColumn.appendChild(reel);
+          
+          reels[i][j] = symbolData;
+        }
+        reelsContainer.appendChild(reelColumn);
+      }
+    }
+
+    function getRandomSymbol() {
+      const totalWeight = CONFIG.symbolWeights.reduce((a, b) => a + b);
+      let random = Math.random() * totalWeight;
+      
+      for (let i = 0; i < CONFIG.symbols.length; i++) {
+        if (random < CONFIG.symbolWeights[i]) return { ...CONFIG.symbols[i] };
+        random -= CONFIG.symbolWeights[i];
+      }
+      
+      return { ...CONFIG.symbols[0] };
+    }
+    
+    function getRandomNonScatterSymbol() {
+        const nonScatterSymbols = CONFIG.symbols.filter(s => !s.isScatter);
+        const nonScatterWeights = CONFIG.symbolWeights.filter((w, i) => !CONFIG.symbols[i].isScatter);
+
+        const totalWeight = nonScatterWeights.reduce((a, b) => a + b, 0);
+        let random = Math.random() * totalWeight;
+        
+        for (let i = 0; i < nonScatterSymbols.length; i++) {
+            if (random < nonScatterWeights[i]) return { ...nonScatterSymbols[i] };
+            random -= nonScatterWeights[i];
+        }
+        
+        return { ...nonScatterSymbols[0] };
+    }
+
+    function determineScatterCount() {
+        const totalProbability = CONFIG.scatterProbability.reduce((sum, p) => sum + p.probability, 0);
+        let random = Math.random() * totalProbability;
+        
+        for (const prob of CONFIG.scatterProbability) {
+            if (random < prob.probability) {
+                return prob.count;
+            }
+            random -= prob.probability;
+        }
+        return 0; 
+    }
+
+    function getRandomMultiplier() {
+      const totalProbability = CONFIG.multiplierValues.reduce((sum, m) => sum + m.probability, 0);
+      let random = Math.random() * totalProbability;
+      
+      for (const multiplier of CONFIG.multiplierValues) {
+        if (random < multiplier.probability) {
+          return {
+            value: multiplier.value,
+            img: CONFIG.symbols.find(s => s.isMultiplier).multiplierImages[multiplier.value]
+          };
+        }
+        random -= multiplier.probability;
+      }
+      
+      return {
+        value: 2,
+        img: CONFIG.symbols.find(s => s.isMultiplier).multiplierImages[2]
+      };
+    }
+
+    function handleSpinClick() {
+      if (autoSpinCount > 0) {
+        return;
+      }
+      if (!isSpinning) {
+        startSpin();
+      }
+    }
+
+    async function processCascadeEffect() {
+      let hasWinningSymbols = true;
+      let totalWin = 0;
+      let cascadeCount = 0;
+      
+      while (hasWinningSymbols) {
+        const result = await processWinningSymbols();
+        hasWinningSymbols = result.hasWinningSymbols;
+        totalWin += result.winAmount;
+        
+        if (hasWinningSymbols) {
+          cascadeCount++;
+          showCascadeCounter(cascadeCount);
+          await sleep(500);
+        }
+      }
+      return { totalWin };
+    }
+    
+    async function checkWins() {
+      await sleep(50); 
+      
+      document.querySelectorAll('.scatter-symbol').forEach(scatterEl => {
+        scatterEl.classList.add('pulse-animation');
+        setTimeout(() => {
+          scatterEl.classList.remove('pulse-animation');
+        }, 400); 
+      });
+      
+      const { totalWin } = await processCascadeEffect();
+      
+      let currentTotalWin = parseFloat(document.getElementById('total-win-amount').textContent.replace(/[^0-9.-]+/g,"")) || 0;
+      const newTotalWin = currentTotalWin + totalWin;
+
+      if (totalWin > 0) {
+        balance += totalWin;
+        showTotalWin(newTotalWin);
+        
+        if (totalWin > currentBet * 20) {
+          showBigWinAnimation(totalWin);
+        }
+      }
+      
+      const scatterCountOnScreen = scatterPositions.length;
+      if (scatterCountOnScreen >= 4) {
+          
+        if (autoSpinCount > 0 && autoSpinSettings.stopOnFeatureWin) {
+            stopAutoSpin("Fitur bonus dimenangkan!");
+        }
+
+        const freeSpins = CONFIG.scatterPayout[scatterCountOnScreen] || 0;
+        if (freeSpins > 0) {
+          await sleep(500); 
+          showFreeSpinAnimation(freeSpins);
+        }
+      }
+      
+      document.getElementById('balance').textContent = formatCurrency(balance);
+      document.getElementById('total-win-amount').textContent = formatCurrency(newTotalWin);
+      
+      completeSpin();
+    }
+    
+    function showBigWinAnimation(winAmount) {
+      const winDisplay = document.getElementById('total-win-amount');
+      winDisplay.style.fontSize = '3rem';
+      winDisplay.style.color = '#ff0';
+      winDisplay.style.textShadow = '0 0 20px gold';
+      
+      setTimeout(() => {
+        winDisplay.style.fontSize = '1.8rem';
+        winDisplay.style.color = 'gold';
+        winDisplay.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.7)';
+      }, 2000);
+    }
+
+    function showCascadeCounter(count) {
+      const counter = document.createElement('div');
+      counter.className = 'cascade-counter';
+      counter.textContent = `CASCADE ${count}x`;
+      document.body.appendChild(counter);
+      
+      setTimeout(() => {
+        counter.remove();
+      }, 1000);
+    }
+
+    async function processWinningSymbols() {
+        let winAmount = 0;
+        const winningPositions = [];
+        const winSymbolInfo = {};
+        let hasWinningSymbols = false;
+
+        const symbolCounts = {};
+        reels.flat().forEach(symbol => {
+            if (symbol && !symbol.isScatter && !symbol.isMultiplier) {
+                symbolCounts[symbol.name] = (symbolCounts[symbol.name] || 0) + 1;
+            }
+        });
+
+        for (const [symbolName, count] of Object.entries(symbolCounts)) {
+            let payoutTier = 0;
+            if (count >= 12) payoutTier = 12;
+            else if (count >= 10) payoutTier = 10;
+            else if (count >= 9) payoutTier = 9;
+
+            if (payoutTier > 0) {
+                hasWinningSymbols = true;
+                const multiplier = CONFIG.payoutTable[symbolName][payoutTier] || 0;
+                const win = Math.ceil(currentBet * multiplier);
+
+                winSymbolInfo[symbolName] = {
+                    count: count,
+                    win: win,
+                    img: CONFIG.symbols.find(s => s.name === symbolName).img
+                };
+
+                for (let col = 0; col < CONFIG.reelCount; col++) {
+                    for (let row = 0; row < CONFIG.rowCount; row++) {
+                        if (reels[col][row] && reels[col][row].name === symbolName) {
+                            winningPositions.push({ col, row });
+                        }
+                    }
+                }
+            }
+        }
+
+        let currentSpinMultiplier = 0;
+        const multipliersToAnimate = []; 
+
+        if (hasWinningSymbols) {
+            for (let col = 0; col < CONFIG.reelCount; col++) {
+                for (let row = 0; row < CONFIG.rowCount; row++) {
+                    if (reels[col][row] && reels[col][row].isMultiplier) {
+                        const multiplier = reels[col][row];
+                        currentSpinMultiplier += multiplier.value;
+                        winningPositions.push({ col, row });
+                        multipliersToAnimate.push(multiplier); 
+                    }
+                }
+            }
+        }
+
+        totalMultiplier += currentSpinMultiplier;
+
+        const winSymbolsContainer = document.getElementById('win-symbols-container');
+        let cascadeWin = 0;
+        for (const [symbolName, info] of Object.entries(winSymbolInfo)) {
+            const baseWin = info.win;
+            const finalWin = totalMultiplier > 0 ? baseWin * totalMultiplier : baseWin;
+            cascadeWin += finalWin;
+
+            const symbolRow = document.createElement('div');
+            symbolRow.className = 'win-symbol-row';
+            symbolRow.innerHTML = `
+              <img src="${info.img}" alt="${symbolName}" class="win-symbol-img">
+              <div class="win-symbol-count">${info.count}</div>
+              <div class="win-symbol-multiplier">${totalMultiplier > 1 ? `x${totalMultiplier}` : ''}</div>
+              <div class="win-symbol-total">${formatCurrency(finalWin)}</div>
+            `;
+            winSymbolsContainer.appendChild(symbolRow);
+        }
+        winAmount = cascadeWin;
+
+        document.getElementById('multiplier-meter-value').textContent = `X${totalMultiplier > 0 ? totalMultiplier : '0'}`;
+
+        if (hasWinningSymbols) {
+            highlightWinningSymbols(winningPositions);
+            await sleep(500);
+
+            multipliersToAnimate.forEach(multiplier => {
+                animateMultiplierToBox(multiplier);
+            });
+            
+            await sleep(500);
+            await removeAndCascadeSymbols(winningPositions);
+        }
+
+        return { hasWinningSymbols, winAmount };
+    }
+    
+    async function handleSingleColumnCascade(col) {
+        const currentColumn = reels[col];
+        const remainingSymbols = currentColumn.filter(symbol => symbol !== null);
+        const newSymbolsNeeded = CONFIG.rowCount - remainingSymbols.length;
+
+        const newSymbols = Array(newSymbolsNeeded).fill(null).map(() => getRandomNonScatterSymbol());
+        reels[col] = [...newSymbols, ...remainingSymbols];
+        
+        const reelColumnElement = document.getElementById(`reel-${col}`);
+        reelColumnElement.innerHTML = ''; 
+        reels[col].forEach((symbolData, row) => {
+            const reel = document.createElement('div');
+            reel.className = 'reel';
+            reel.style.top = `${row * 20}%`;
+            
+            const img = document.createElement('img');
+            if(symbolData.isMultiplier) {
+                const multiplierData = getRandomMultiplier();
+                symbolData.value = multiplierData.value;
+                symbolData.img = multiplierData.img;
+            }
+
+            img.src = symbolData.img;
+            img.alt = symbolData.name;
+            img.className = 'symbol';
+            img.dataset.symbol = symbolData.name;
+
+            if (symbolData.isScatter) {
+                img.classList.add('scatter-symbol');
+            }
+
+            if (row < newSymbolsNeeded) { 
+                img.classList.add('symbol-falling');
+                img.style.animationDelay = `${row * 100}ms`;
+            }
+
+            reel.appendChild(img);
+            reelColumnElement.appendChild(reel);
+        });
+        
+        await sleep(600 + newSymbolsNeeded * 100);
+    }
+
+    function animateMultiplierToBox(multiplier) {
+      const popup = document.getElementById('multiplier-display');
+      popup.innerHTML = `<img src="${multiplier.img}" alt="X${multiplier.value}" style="width:100px;height:100px;">`;
+      popup.classList.add('show');
+      
+      const multiplierBox = document.querySelector('.multiplier-box');
+      const boxRect = multiplierBox.getBoundingClientRect();
+      
+      const flyingElement = document.createElement('div');
+      flyingElement.className = 'multiplier-fly';
+      flyingElement.style.position = 'fixed';
+      flyingElement.style.top = '50%';
+      flyingElement.style.left = '50%';
+      flyingElement.style.transform = 'translate(-50%, -50%)';
+      flyingElement.innerHTML = `<img src="${multiplier.img}" alt="X${multiplier.value}" style="width:60px;height:60px;">`;
+      
+      const targetX = boxRect.left + boxRect.width/2;
+      const targetY = boxRect.top + boxRect.height/2;
+
+      flyingElement.style.setProperty('--target-x', `${targetX - window.innerWidth / 2}px`);
+      flyingElement.style.setProperty('--target-y', `${targetY - window.innerHeight / 2}px`);
+      
+      document.body.appendChild(flyingElement);
+      
+      flyingElement.addEventListener('animationend', () => flyingElement.remove());
+      
+      setTimeout(() => popup.classList.remove('show'), 300);
+    }
+  </script>
+</body>
+</html>
